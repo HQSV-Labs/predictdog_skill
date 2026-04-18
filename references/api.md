@@ -33,7 +33,22 @@ If `wallet` is null or `setupStatus` ≠ `COMPLETED`, direct user to predictdog.
 ## Trading
 
 ### POST /api/trade/readiness
-Check if user is ready to trade before placing orders.
+Check if user is ready to trade before placing orders. Must include the trade details.
+
+**Request body:**
+```json
+{
+  "venue": "POLYMARKET",
+  "trade": {
+    "tokenId": "string",
+    "side": "BUY" | "SELL",
+    "orderType": "MARKET" | "LIMIT",
+    "amount": 10.00,
+    "limitPrice": 0.65
+  }
+}
+```
+`limitPrice` is required only for LIMIT orders.
 
 **Success:** `{ "ok": true }`
 
@@ -179,7 +194,8 @@ Search prediction markets by keyword. Supports any language — input is resolve
           "id": "market-id",
           "question": "Will BTC exceed $100k in 2025?",
           "outcomes": ["Yes", "No"],
-          "prices": [0.72, 0.28]
+          "prices": [0.72, 0.28],
+          "clobTokenIds": ["token-id-yes", "token-id-no"]
         }
       ]
     },
@@ -221,7 +237,7 @@ Browse top events across Polymarket and Kalshi.
 ## Analytics / PnL
 
 ### GET /api/analytics/user/:address/portfolio-analytics
-Historical PnL and trading statistics. Public endpoint — no auth required.
+Historical PnL and trading statistics. Requires auth (`x-api-key` header).
 
 **Path param:** `address` = user's proxy wallet address (get from `/auth/me`)
 

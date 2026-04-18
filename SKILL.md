@@ -69,7 +69,14 @@ To find the `tokenId` for trading:
    - `outcomes[0]` corresponds to `clobTokenIds[0]`, etc.
 
 Before submitting:
-- Check readiness: `POST /api/trade/readiness`
+- Check readiness — send the same trade details you're about to place:
+  ```
+  POST /api/trade/readiness
+  Body: {
+    "venue": "POLYMARKET",
+    "trade": { "tokenId": "...", "side": "BUY"|"SELL", "orderType": "MARKET"|"LIMIT", "amount": 10.00, "limitPrice": 0.65 }
+  }
+  ```
 - Handle readiness errors (see New User / Not Set Up above)
 - Show confirmation to user and wait for explicit approval
 - **Never trade without explicit user confirmation**
