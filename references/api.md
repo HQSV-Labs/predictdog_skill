@@ -44,11 +44,42 @@ Check if user is ready to trade before placing orders. Must include the trade de
     "side": "BUY" | "SELL",
     "orderType": "MARKET" | "LIMIT",
     "amount": 10.00,
-    "limitPrice": 0.65
+    "limitPrice": 0.65,
+    "strategyContext": {
+      "definitionId": "polymarket-btc-5m-directional",
+      "executionScopeKey": "btc-updown-5m-1710000000",
+      "eventSlug": "btc-updown-5m-1710000000",
+      "marketId": "market-id",
+      "outcomeLabel": "Up",
+      "riskConfig": {
+        "takeProfitPrice": 0.65,
+        "stopLossPrice": 0.35
+      },
+      "metadata": {
+        "surface": "crypto-recurring",
+        "asset": "BTC",
+        "interval": "5m",
+        "roundStartSec": 1710000000
+      }
+    }
   }
 }
 ```
 `limitPrice` is required only for LIMIT orders.
+`strategyContext` is optional. Use it for recurring crypto BUY orders when the trade should be tracked as a recurring crypto strategy entry.
+
+`strategyContext.riskConfig` supports:
+```json
+{
+  "takeProfitPrice": 0.65,
+  "stopLossPrice": 0.35
+}
+```
+
+Constraints:
+- TP/SL is supported for recurring crypto BUY orders only.
+- `takeProfitPrice` and `stopLossPrice` must each be in `(0,1)`.
+- If both are present, `takeProfitPrice` must be greater than `stopLossPrice`.
 
 **Success:** `{ "ok": true }`
 
@@ -70,9 +101,32 @@ Place a trade order.
   "side": "BUY" | "SELL",
   "orderType": "MARKET" | "LIMIT",
   "amount": 10.00,         // BUY: USDC amount, SELL: number of shares
-  "limitPrice": 0.65       // Required for LIMIT orders (0-1 range)
+  "limitPrice": 0.65,      // Required for LIMIT orders (0-1 range)
+  "strategyContext": {
+    "definitionId": "polymarket-btc-5m-directional",
+    "executionScopeKey": "btc-updown-5m-1710000000",
+    "eventSlug": "btc-updown-5m-1710000000",
+    "marketId": "market-id",
+    "outcomeLabel": "Up",
+    "riskConfig": {
+      "takeProfitPrice": 0.65,
+      "stopLossPrice": 0.35
+    },
+    "metadata": {
+      "surface": "crypto-recurring",
+      "asset": "BTC",
+      "interval": "5m",
+      "roundStartSec": 1710000000
+    }
+  }
 }
 ```
+
+Field notes:
+- `amount` keeps the standard semantics: BUY = USDC amount, SELL = shares.
+- `strategyContext` is optional and intended for recurring crypto BUY orders.
+- For ordinary Polymarket events, omit `strategyContext`.
+- For user-facing Polymarket summaries, format share prices in cents (`¢`) instead of dollars.
 
 **Success response:**
 ```json
@@ -213,6 +267,11 @@ Search prediction markets by keyword. Supports any language — input is resolve
 **Trading from search results:**
 - `outcomes[i]` maps to `clobTokenIds[i]` — use `clobTokenIds[i]` as the `tokenId` when placing an order for outcome `i`.
 - Example: to buy "Yes" (index 0), use `markets[0].clobTokenIds[0]` as `tokenId` with `side: "BUY"`.
+
+**Recurring crypto trading from search results:**
+- Queries like `BTC 5m up`, `ETH 15m down`, or `SOL daily up` may resolve to recurring crypto rounds.
+- If the matched event is a recurring crypto round and the user is placing a BUY order, attach a recurring `strategyContext`.
+- If the user also specified TP/SL, place those values inside `strategyContext.riskConfig`.
 
 ### GET /api/events/aggregated
 Browse top events across Polymarket and Kalshi.

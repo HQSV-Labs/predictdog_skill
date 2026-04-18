@@ -9,6 +9,7 @@ This skill connects to the [Predictdog](https://predictdog.xyz) API and works wi
 - **Search markets** — "find BTC markets", "search Trump election"
 - **View portfolio** — positions, PnL, open orders
 - **Place trades** — "buy $20 Yes on BTC above 100k"
+- **Trade recurring crypto rounds** — "buy BTC 5m up", optionally with `tp/sl`
 - **Cancel orders** — list and cancel unfilled limit orders
 - **Claim payouts** — redeem resolved market winnings
 
@@ -67,11 +68,15 @@ Once installed, just talk to your agent naturally:
 "search for NBA finals markets"
 "what's my portfolio?"
 "buy $10 Yes on Spurs winning the NBA Finals"
+"buy BTC 5m up"
+"buy BTC 5m up tp 0.65 sl 0.35"
 "show my open orders"
 "what's my PnL?"
 ```
 
 The agent will call the Predictdog API and handle everything — including confirming trades before executing them.
+
+For recurring crypto BUY orders on Polymarket, the agent may attach a recurring `strategyContext` with optional TP/SL risk config so the trade is tracked as a recurring crypto strategy entry.
 
 ## API
 

@@ -106,7 +106,7 @@ Once you have funds, come back and I'll execute the trade for you.
    Market: Will BTC exceed $100k in 2025?
    Side: BUY Yes
    Amount: $20.00 USDC
-   Current price: $0.72
+   Current price: 72¢
    Est. shares: ~27.8
    Balance after: $22.50
 
@@ -116,6 +116,60 @@ Once you have funds, come back and I'll execute the trade for you.
    ```json
    { "tokenId": "...", "side": "BUY", "orderType": "MARKET", "amount": 20.00 }
    ```
+
+---
+
+## Placing a Recurring Crypto Trade With TP/SL
+
+**User:** "buy BTC 5m up tp 0.65 sl 0.35"
+
+1. Search: `GET /api/markets/search?q=BTC 5m up`
+2. Resolve the recurring round event and map outcome `Up` to `markets[0].clobTokenIds[i]`
+3. Check readiness: `POST /api/trade/readiness`
+4. **Show confirmation before submitting:**
+    ```
+    Trade Confirmation
+    Market: Bitcoin Up or Down - April 18, 2:50AM-2:55AM ET
+    Side: BUY Up
+    Amount: $1.00 USDC
+    Current price: 49¢
+    Est. shares: ~2.04
+    TP: 65¢
+    SL: 35¢
+
+    Confirm? (yes/no)
+    ```
+5. On confirmation: `POST /api/trade/order`
+    ```json
+    {
+       "tokenId": "token-id-up",
+       "side": "BUY",
+       "orderType": "MARKET",
+       "amount": 1.0,
+       "strategyContext": {
+          "definitionId": "polymarket-btc-5m-directional",
+          "executionScopeKey": "btc-updown-5m-1710000000",
+          "eventSlug": "btc-updown-5m-1710000000",
+          "marketId": "market-id",
+          "outcomeLabel": "Up",
+          "riskConfig": {
+             "takeProfitPrice": 0.65,
+             "stopLossPrice": 0.35
+          },
+          "metadata": {
+             "surface": "crypto-recurring",
+             "asset": "BTC",
+             "interval": "5m",
+             "roundStartSec": 1710000000
+          }
+       }
+    }
+    ```
+
+Notes:
+- TP/SL is for recurring crypto BUY orders only.
+- TP/SL values are decimal prices in `(0,1)` even if the user speaks in cents.
+- In user-facing Polymarket summaries, present share prices in cents (`¢`).
 
 ---
 
@@ -159,3 +213,4 @@ Once you have funds, come back and I'll execute the trade for you.
 | `NO_LIQUIDITY` | "No liquidity at that price. Try a market order instead." |
 | `ORDERBOOK_MISSING` | "Market not found or unavailable." |
 | `CLOB_RATE_LIMITED` | "Too many requests. Please wait a moment." |
+| invalid TP/SL | "TP/SL is only supported for recurring crypto BUY orders, and TP must be greater than SL." |

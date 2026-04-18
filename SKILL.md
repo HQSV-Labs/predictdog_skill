@@ -1,6 +1,6 @@
 ---
 name: predictdog
-description: "Trade on Polymarket, view portfolio, check PnL, and search prediction markets via the Predictdog API. Use when the user wants to: search markets (e.g. 'find BTC markets'), place trades (e.g. 'buy $10 Yes on Trump wins'), view their portfolio or positions, check PnL/analytics, manage open orders, claim resolved positions, or interact with predictdog.xyz. Requires PREDICTDOG_API_KEY configured in environment or provided by user."
+description: "Trade on Polymarket, including recurring crypto rounds with optional TP/SL, view portfolio, check PnL, and search prediction markets via the Predictdog API. Use when the user wants to: search markets (e.g. 'find BTC markets'), place trades (e.g. 'buy $10 Yes on Trump wins', 'buy BTC 5m up tp 0.65 sl 0.35'), view their portfolio or positions, check PnL/analytics, manage open orders, claim resolved positions, or interact with predictdog.xyz. Requires PREDICTDOG_API_KEY configured in environment or provided by user."
 ---
 
 # Predictdog Skill
@@ -85,6 +85,50 @@ Before submitting:
 POST /api/trade/order
 Body: { tokenId, side, orderType, amount, limitPrice? }
 ```
+
+### 4a. Recurring Crypto With TP/SL
+
+Recurring crypto is a distinct Polymarket trading surface. Treat queries like these as recurring crypto requests rather than ordinary event trades:
+- `buy BTC 5m up`
+- `buy ETH 15m down`
+- `buy SOL hourly up`
+- `buy BNB daily down tp 0.62 sl 0.30`
+
+For recurring crypto BUY orders, you may attach an optional `strategyContext`.
+
+Use `strategyContext` only when:
+- venue is `POLYMARKET`
+- the matched market is a recurring crypto round
+- the user is placing a BUY order
+
+Optional TP/SL support:
+- TP/SL belongs inside `strategyContext.riskConfig`
+- Both values are decimal prices in `(0,1)`
+- If both are present, `takeProfitPrice` must be greater than `stopLossPrice`
+- TP/SL is for recurring crypto BUY orders only
+
+Example `strategyContext`:
+```json
+{
+  "definitionId": "polymarket-btc-5m-directional",
+  "executionScopeKey": "btc-updown-5m-1710000000",
+  "eventSlug": "btc-updown-5m-1710000000",
+  "marketId": "market-id",
+  "outcomeLabel": "Up",
+  "riskConfig": {
+    "takeProfitPrice": 0.65,
+    "stopLossPrice": 0.35
+  },
+  "metadata": {
+    "surface": "crypto-recurring",
+    "asset": "BTC",
+    "interval": "5m",
+    "roundStartSec": 1710000000
+  }
+}
+```
+
+For user-facing Polymarket summaries, present share prices in cents (`¢`) rather than `$0.xx`.
 
 ### 5. Cancel an Order
 ```
